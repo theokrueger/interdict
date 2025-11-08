@@ -35,11 +35,20 @@ ATYP_IPV4 = b'\x01'
 ATYP_DOMAINNAME = b'\x03'
 
 # interdiction config
+with open('config.yaml', 'r') as f:
+    data = yaml.load(f, Loader=yaml.SafeLoader)
+
+aggressiveness = 1 # affects the aggressiveness of the decay function 
+delay = 5 # in minutes
+window = 60 # in minutes
+sensitivity = 1 # number of packets required before it considers an app in use
+
 blocklist = dict()
-blocklist[b"www.reddit.com"] = 1
-blocklist[b"preview.redd.it"] = 1
-blocklist[b"www.instagram.com"] = 1
-blocklist[b"gateway.instagram.com"] = 1
+blocklist[b"www.reddit.com"] = [0, queue()] # running total, count per minute
+blocklist[b"preview.redd.it"] = [0, queue()]
+blocklist[b"www.instagram.com"] = [0, queue()]
+blocklist[b"gateway.instagram.com"] = [0, queue()]
+starttime = time.time()
 
 exit = False
 
