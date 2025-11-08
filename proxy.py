@@ -13,6 +13,7 @@ from time import sleep
 import sys
 import time
 import random
+from queue import Queue
 
 BUFSIZE = 2048
 TIMEOUT_SOCKET = 5
@@ -33,14 +34,20 @@ ATYP_IPV4 = b'\x01'
 ATYP_DOMAINNAME = b'\x03'
 
 # interdiction config
+
+aggressiveness = 1 # affects the aggressiveness of the decay function 
+delay = 5 # in minutes
+window = 60 # in minutes
+sensitivity = 1 # number of packets required before it considers an app in use
+
 blocklist = dict()
-blocklist[b"www.reddit.com"] = 1
-blocklist[b"preview.redd.it"] = 1
-blocklist[b"www.instagram.com"] = 1
-blocklist[b"gateway.instagram.com"] = 1
+blocklist[b"www.reddit.com"] = [0, queue()] # running total, count per minute
+blocklist[b"preview.redd.it"] = [0, queue()]
+blocklist[b"www.instagram.com"] = [0, queue()]
+blocklist[b"gateway.instagram.com"] = [0, queue()]
+starttime = time.time()
 
 exit = False
-
 
 
 def error(msg="", err=None):
@@ -62,10 +69,12 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
                 data = sock.recv(BUFSIZE)
                 if not data: # TCP connection has been closed
                     return
-                #print(f"Processing Message to/from {dst_addr}")
-                #if (dst_addr in blocklist):
-                    #time.sleep(random.random() / 5)
-                    #print(f"Blocking Message to/from {dst_addr}")
+                print(f"Processing Message to/from {dst_addr}")
+
+                if any([substring in element for element in l]):
+                    blocklist[dst_addr][1]
+                    time.sleep(random.random() / 5)
+                    print(f"Blocking Message to/from {dst_addr}")
                 if sock is socket_dst:
                     socket_src.send(data)
                 else:
