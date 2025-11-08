@@ -1,0 +1,5 @@
+delayTime: 1
+aggressivness: 1
+blocklist:
+  - www.google.com
+  - www.instagram.com
