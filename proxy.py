@@ -8,13 +8,14 @@ import socket
 import select
 from struct import pack, unpack
 import traceback
-from threading import Thread, activeCount, Lock
+from threading import Thread, activeCount, Lock, Semaphore
 from signal import signal, SIGINT, SIGTERM
 from time import sleep
 import sys
 import time
 import random
 from queue import Queue
+from collections import deque
 
 BUFSIZE = 2048
 TIMEOUT_SOCKET = 5
@@ -45,16 +46,19 @@ sensitivity = 1 # number of packets required before it considers an app in use
 
 blocklist = dict()
 for link in data['blocklist']:
-    blocklist[link.encode()] = 1
+    blocklist[link.encode()] = [0, deque([0]*60), 0] # running total, count per minute, total in current minute
 delay = data['delayTime']
 aggressiveness = data['aggressivness']
 
 
 
-blocklist[b"www.reddit.com"] = 1
-blocklist[b"preview.redd.it"] = 1
-blocklist[b"www.instagram.com"] = 1
-blocklist[b"gateway.instagram.com"] = 1
+# blocklist[b"www.reddit.com"] = 1
+# blocklist[b"preview.redd.it"] = 1
+# blocklist[b"www.instagram.com"] = 1
+# blocklist[b"gateway.instagram.com"] = 1
+starttime = time.time()
+minute_boundary = starttime
+sem = Semaphore()
 
 exit = False
 
@@ -64,7 +68,7 @@ def error(msg="", err=None):
     traceback.print_exc()
 
 
-def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in either client or destination sockets, forward directly
+async def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in either client or destination sockets, forward directly
     while not exit:
         try:
             reader, _, _ = select.select([socket_src, socket_dst], [], [], 1)
@@ -73,6 +77,15 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
             return
         if not reader:
             continue
+        # on minute boundary, update all lists by popping last minute and subtracting total
+        if time.time() - minute_boundary > 60:
+            minute_boundary = time.time()
+            async with sem.acquire():
+                for b in blocklist:
+                    window_remove = b[1].popleft()
+                    b[1].append(b[2])
+                    b[2] = 0
+                    b[0] -= window_remove
         try:
             for sock in reader:
                 data = sock.recv(BUFSIZE)
@@ -81,9 +94,15 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
                 print(f"Processing Message to/from {dst_addr}")
 
                 if any([substring in element for element in l]):
-                    blocklist[dst_addr][1]
-                    time.sleep(random.random() / 5)
-                    print(f"Blocking Message to/from {dst_addr}")
+                    # add to the number of requests made (in minute and total)
+                    async with sem.acquire():
+                        b = blocklist[dst_addr]
+                        b[2] += 1
+                        b[0] += 1
+                        # if more than limit, throttle
+                        if b[0] > 20:
+                            time.sleep(random.random() / 5)
+                            print(f"Blocking Message to/from {dst_addr}")
                 if sock is socket_dst:
                     socket_src.send(data)
                 else:
