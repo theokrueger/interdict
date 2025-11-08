@@ -3,6 +3,7 @@
 # adatped from https://github.com/CodeWithImm/socks5_proxy/blob/main/socks5_proxy.py.py
 # MIT License
 
+import yaml
 import socket
 import select
 from struct import pack, unpack
@@ -33,7 +34,19 @@ ATYP_IPV4 = b'\x01'
 ATYP_DOMAINNAME = b'\x03'
 
 # interdiction config
+with open('config.yaml', 'r') as f:
+    data = yaml.load(f, Loader=yaml.SafeLoader)
+
 blocklist = dict()
+for link in data['blocklist']:
+    blocklist[link.encode()] = 1
+for link in blocklist.keys():
+    print(link)
+delay = data['delayTime']
+aggressiveness = data['aggressivness']
+
+
+
 blocklist[b"www.reddit.com"] = 1
 blocklist[b"preview.redd.it"] = 1
 blocklist[b"www.instagram.com"] = 1
