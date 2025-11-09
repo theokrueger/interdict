@@ -1,7 +1,7 @@
 ![Banner](./static/banner.png)
 
 ## TL;DR
-**Interdict** is a revolution in effective screentime management. Completely invisible to the user, Interdict will intelligently and subtly convince your brain to slow your doomscroll and interact with addictive apps & websites in a healthy manner. Interdict is bespoke, effective adversive conditioning tool for your Reels addiction.
+**Interdict** is a revolution in effective screentime management. Completely invisible to the user, Interdict will intelligently and subtly convince your brain to slow your doomscroll and interact with addictive apps & websites in a healthy manner. Interdict is bespoke, *effective adversive conditioning tool* for your Reels addiction.
 
 ## Usage
 Install:
