@@ -1,5 +1,7 @@
-delayTime: 1
 aggressivness: 1
 blocklist:
-  - www.google.com
-  - www.instagram.com
+- www.google.com
+- www.instagram.com
+- www.youtube.com
+- www.reddit.com
+delayTime: 1
