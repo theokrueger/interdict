@@ -8,7 +8,7 @@ import socket
 import select
 from struct import pack, unpack
 import traceback
-from threading import Thread, activeCount, Lock
+from threading import Thread, activeCount, Lock, Semaphore
 from signal import signal, SIGINT, SIGTERM
 from time import sleep
 import sys
