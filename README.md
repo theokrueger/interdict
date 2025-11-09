@@ -47,9 +47,7 @@ By using a SOCKS5 server and looking exclusively at the destination of packets, 
 The nature of the throttling is **highly configurable**, allowing the user to modify the length of the grace period before throttling starts, rate at which the slowdown increases (agressiveness), how long of a time activity is tracked over, and more!
 
 Each packet stream is throttled by some amount of time determined by the following formula:
-$$
-\left( \frac{m}{1+e^{u-ax}} - \frac{m}{1+e^{u}} \right)\cdot \left( \frac{m}{m-\frac{m}{1+e^{u}}} \right)
-$$
+![how](./static/da_al-gore-ithm.png)
 Where 
 *m* is the maximum throttle delay
 *a* is the aggressiveness factor
