@@ -2,6 +2,7 @@ aggressivness: 0.5
 blocklist:
 - reddit.com
 - instagram.com
+- redd.it
 grace_period: 1
 interval_size: 5
 max_throttle: 0.5
