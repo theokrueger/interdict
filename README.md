@@ -1,5 +1,4 @@
-# Interdict
-![./static/banner.png]
+![Banner](./static/banner.png)
 
 Throttle your Vices
 
