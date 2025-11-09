@@ -33,37 +33,37 @@
                 <div class="space-y-4">
                     <!-- Configuration fields as before -->
                     <div>
-                        <label for="grace_period" class="block text-lg font-medium">Grace Period (Number of intervals)</label>
+                        <label for="grace_period" class="block text-lg font-medium">Grace Period (Number of intervals) - How long it takes for activity to be counted towards usage.</label>
                         <input type="number" name="grace_period" id="grace_period" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('grace_period', '') }}">
                     </div>
 
                     <div>
-                        <label for="random_delay" class="block text-lg font-medium">Random Delay (Fraction)</label>
+                        <label for="random_delay" class="block text-lg font-medium">Random Delay (Fraction) - How much random delay length is added to each delayed segment.</label>
                         <input type="number" name="random_delay" id="random_delay" step="any" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('random_delay', '') }}">
                     </div>
 
                     <div>
-                        <label for="aggressivness" class="block text-lg font-medium">Aggressiveness</label>
+                        <label for="aggressivness" class="block text-lg font-medium">Aggressiveness - How quickly throttling length increases</label>
                         <input type="number" name="aggressivness" id="aggressivness" step="any" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('aggressivness', '') }}">
                     </div>
 
                     <div>
-                        <label for="sensitivity" class="block text-lg font-medium">Sensitivity (Segments per Interval)</label>
+                        <label for="sensitivity" class="block text-lg font-medium">Sensitivity (Segments per Interval) - How many data segments is required for a site to be considered in use during the interval</label>
                         <input type="number" name="sensitivity" id="sensitivity" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('sensitivity', '') }}">
                     </div>
 
                     <div>
-                        <label for="max_throttle" class="block text-lg font-medium">Max Throttle (Seconds)</label>
+                        <label for="max_throttle" class="block text-lg font-medium">Max Throttle (Seconds) - Maximum allowed length a data segment can be delayed</label>
                         <input type="number" name="max_throttle" id="max_throttle" step="any" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('max_throttle', '') }}">
                     </div>
 
                     <div>
-                        <label for="interval_size" class="block text-lg font-medium">Interval Length (Seconds)</label>
+                        <label for="interval_size" class="block text-lg font-medium">Interval Length (Seconds) - How long each unit of activity is</label>
                         <input type="number" name="interval_size" id="interval_size" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('interval_size', '') }}">
                     </div>
 
                     <div>
-                        <label for="window" class="block text-lg font-medium">Window (Minutes)</label>
+                        <label for="window" class="block text-lg font-medium">Window (Minutes) - How long to track activity over</label>
                         <input type="number" name="window" id="window" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('window', '') }}">
                     </div>
 
