@@ -42,9 +42,11 @@ with open('config.yaml', 'r') as f:
 
 grace_period = data['grace_period'] # in units of 15 seconds
 aggressiveness = data['aggressivness'] # integer value 1-10
+max_throttle = data['max_throttle']
 window = data['window'] # in units of 15 seconds
 sensitivity = data['sensitivity'] # threshold of activity during a given window before it is considered usage
 random_delay = data['random_delay']
+interval_size = data['interval_size']
 blocklist = dict()
 for link in data['blocklist']:
     blocklist[link.encode()] = [0, deque([0] * window), 0] # number of time units > sensitivity, packet count per time unit, packet total in current time unit
@@ -86,8 +88,11 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
                     lock.release()
                     # if the number of packets processed during the current window, NOT counting the last [DELAY] minutes, is > sensitivity, throttle.
                     #d = (max_throttle / (1+math.exp(-aggressiveness*(x-START_POINT)))) - (max_throttle/(1+math.exp(aggressiveness * START_POINT)))
-                    d = min(aggressiveness * math.exp(b[0]/2) * b[0] / 100, 2)
-                    time.sleep((random.random()*random_delay+(1-random_delay)) * d)
+                    
+                    offset = 2/aggressiveness
+                    height_adjust = max_throttle / (1 + math.exp(aggressiveness * offset))
+                    max_delay = (max_throttle / (max_throttle - height_adjust)) * ((max_throttle / (1 + math.exp(-aggressiveness * (b[0]*interval_size/60 - offset)))) - height_adjust)
+                    time.sleep((random.random()*random_delay+(1-random_delay)) * max_delay)
 
                     print(f"Blocking Message to/from {dst_addr}")
 
@@ -315,8 +320,8 @@ def main():
             sys.exit(0)
         recv_thread = Thread(target=connection, args=(wrapper, ))
         recv_thread.start()
-        if time.time() - time_bound > 15:
-            time_bound += 15
+        if time.time() - time_bound > interval_size:
+            time_bound += interval_size
             lock.acquire()
             for b in blocklist:
                 window_remove = blocklist[b][1].popleft()

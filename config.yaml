@@ -2,6 +2,8 @@ grace_period: 0
 random_delay: 0.1
 aggressivness: 10
 sensitivity: 10
+max_throttle: 10
+interval_size: 5
 window: 20
 blocklist:
   - www.reddit.com
