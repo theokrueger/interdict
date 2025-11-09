@@ -46,9 +46,9 @@ def index():
             # Update the configuration fields
             config['grace_period'] = request.form.get('grace_period', type=int)
             config['random_delay'] = request.form.get('random_delay', type=float)
-            config['aggressivness'] = request.form.get('aggressivness', type=int)
+            config['aggressivness'] = request.form.get('aggressivness', type=float)
             config['sensitivity'] = request.form.get('sensitivity', type=int)
-            config['max_throttle'] = request.form.get('max_throttle', type=int)
+            config['max_throttle'] = request.form.get('max_throttle', type=float)
             config['interval_size'] = request.form.get('interval_size', type=int)
             config['window'] = request.form.get('window', type=int)
             save_config(config)

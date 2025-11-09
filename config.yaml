@@ -1,9 +1,10 @@
-aggressivness: 10
+aggressivness: 0.5
 blocklist:
+- reddit.com
 - instagram.com
-grace_period: 2
+grace_period: 1
 interval_size: 5
-max_throttle: 10
+max_throttle: 0.5
 random_delay: 0.1
 sensitivity: 10
-window: 19
+window: 20
