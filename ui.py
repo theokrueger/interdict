@@ -1,120 +1,66 @@
-import sys
+import os
 import yaml
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel, QFormLayout, QFileDialog, QListWidget, QInputDialog
+from flask import Flask, render_template, request, redirect, url_for
 
-class ConfigEditor(QWidget):
-    def __init__(self):
-        super().__init__()
+app = Flask(__name__)
 
-        self.setWindowTitle("YAML Configuration Editor")
-        self.setGeometry(100, 100, 400, 350)
+# Load configuration from a YAML file
+def load_config():
+    if os.path.exists('config.yaml'):
+        with open('config.yaml', 'r') as file:
+            return yaml.safe_load(file)
+    return {}
 
-        # Layout
-        self.layout = QVBoxLayout()
+# Save the configuration to a YAML file
+def save_config(config):
+    print("Saving config to YAML file...")
+    with open('config.yaml', 'w') as file:
+        yaml.dump(config, file, default_flow_style=False)
+    print("Config saved!")
 
-        # Form Layout for text boxes and labels
-        self.form_layout = QFormLayout()
+# Route to handle the main page
+@app.route("/", methods=["GET", "POST"])
+def index():
+    config = load_config()
 
-        # Labels and QLineEdits for the 2 numeric fields
-        self.field1 = QLineEdit()
-        self.field2 = QLineEdit()
+    if request.method == "POST":
+        print("Form submitted.")
 
-        # Add labels and fields to the form layout
-        self.form_layout.addRow("Delay Time (Number):", self.field1)
-        self.form_layout.addRow("Aggressiveness (Number):", self.field2)
-
-        # Blocklist UI (using QListWidget for the list of strings)
-        self.blocklist_label = QLabel("Blocklist (URLs):")
-        self.blocklist_list = QListWidget()
-
-        # Instructions for adding URLs
-        self.blocklist_instructions = QLabel("Add URLs to the blocklist below:")
-
-        # Buttons for adding and removing blocklist items
-        self.add_block_button = QPushButton("Add URL to Blocklist")
-        self.remove_block_button = QPushButton("Remove Selected URL")
-
-        # Connect buttons to functions
-        self.add_block_button.clicked.connect(self.add_to_blocklist)
-        self.remove_block_button.clicked.connect(self.remove_from_blocklist)
-
-        # Add buttons and list to layout
-        self.layout.addLayout(self.form_layout)
-        self.layout.addWidget(self.blocklist_instructions)
-        self.layout.addWidget(self.blocklist_label)
-        self.layout.addWidget(self.blocklist_list)
-        self.layout.addWidget(self.add_block_button)
-        self.layout.addWidget(self.remove_block_button)
-
-        # Load and Save Buttons
-        self.save_button = QPushButton("Save YAML")
+        # Handle blocklist actions (add/remove)
+        if 'add_blocklist' in request.form:
+            url_to_add = request.form.get("new_url")
+            if url_to_add:
+                if 'blocklist' not in config:
+                    config['blocklist'] = []
+                config['blocklist'].append(url_to_add)
+                save_config(config)
+                print(f"Added to blocklist: {url_to_add}")
         
-        self.save_button.clicked.connect(self.save_yaml)
+        elif 'remove_blocklist' in request.form:
+            url_to_remove = request.form.get("url_to_remove")
+            if url_to_remove:
+                if 'blocklist' in config and url_to_remove in config['blocklist']:
+                    config['blocklist'].remove(url_to_remove)
+                    save_config(config)
+                    print(f"Removed from blocklist: {url_to_remove}")
 
-        self.layout.addWidget(self.save_button)
+        # Handle saving the configuration fields
+        if 'save_config' in request.form:
+            config['grace_period'] = request.form.get('grace_period', type=int)
+            config['random_delay'] = request.form.get('random_delay', type=float)
+            config['aggressivness'] = request.form.get('aggressivness', type=int)
+            config['sensitivity'] = request.form.get('sensitivity', type=int)
+            config['max_throttle'] = request.form.get('max_throttle', type=int)
+            config['interval_size'] = request.form.get('interval_size', type=int)
+            config['window'] = request.form.get('window', type=int)
 
-        self.load_yaml()
+            save_config(config)
+            print(f"Configuration saved: {config}")
 
-        # Set layout for the window
-        self.setLayout(self.layout)
+        return redirect(url_for("index"))
 
-    def load_yaml(self):
-        """Load YAML configuration file and display values in text fields"""
-        with open("config.yaml", 'r') as f:
-            config = yaml.safe_load(f)
-
-        # Populate fields with the loaded configuration, handling number fields
-        self.field1.setText(str(config.get('delayTime', '')))
-        self.field2.setText(str(config.get('aggressivness', '')))
-        
-        # Populate blocklist (list of strings)
-        self.blocklist_list.clear()
-        blocklist = config.get('blocklist', [])
-        self.blocklist_list.addItems(blocklist)
-
-    def save_yaml(self):
-        """Save the current values in the text fields to the YAML file"""
-        # Create config dictionary with data from UI
-        config = {
-            'delayTime': self.text_to_number(self.field1.text()),
-            'aggressivness': self.text_to_number(self.field2.text()),
-            'blocklist': [self.blocklist_list.item(i).text() for i in range(self.blocklist_list.count())]  # List of strings
-        }
-        with open("config.yaml", 'w') as f:
-            yaml.dump(config, f, default_flow_style=False)
-
-    def text_to_number(self, text: str):
-        """Convert text to number (either int or float) if possible."""
-        try:
-            # Try converting to integer first
-            return int(text)
-        except ValueError:
-            try:
-                # If it fails, try converting to float
-                return float(text)
-            except ValueError:
-                # If it can't be converted, return the original string
-                return text
-
-    def add_to_blocklist(self):
-        """Add a URL to the blocklist"""
-        url, ok = QInputDialog.getText(self, "Enter URL", "Add URL to Blocklist:")
-        if ok and url:  # Proceed if the user entered a URL and clicked OK
-            self.blocklist_list.addItem(url)
-
-    def remove_from_blocklist(self):
-        """Remove selected URL from the blocklist"""
-        selected_items = self.blocklist_list.selectedItems()
-        for item in selected_items:
-            self.blocklist_list.takeItem(self.blocklist_list.row(item))
-
-# Run the application
-def main():
-    app = QApplication(sys.argv)
-    editor = ConfigEditor()
-    editor.show()
-    sys.exit(app.exec())
+    return render_template("index.html", config=config)
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
 

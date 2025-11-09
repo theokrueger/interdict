@@ -1,12 +1,9 @@
-grace_period: 0
-random_delay: 0.1
 aggressivness: 10
-sensitivity: 10
-max_throttle: 10
-interval_size: 5
-window: 20
 blocklist:
-  - www.reddit.com
-  - instagram.com
-  - preview.redd.it
-  - v.redd.it
+- instagram.com
+grace_period: 2
+interval_size: 5
+max_throttle: 10
+random_delay: 0.1
+sensitivity: 10
+window: 19

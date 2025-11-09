@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML Configuration Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-semibold text-center mb-6">YAML Configuration Editor</h1>
+
+        <!-- Form to update configuration -->
+        <form method="POST">
+            <div class="grid grid-cols-2 gap-8">
+                <!-- Left Column: Configuration Fields -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="grace_period" class="block text-lg font-medium">Grace Period</label>
+                        <input type="number" name="grace_period" id="grace_period" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('grace_period', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="random_delay" class="block text-lg font-medium">Random Delay</label>
+                        <input type="number" name="random_delay" id="random_delay" step="any" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('random_delay', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="aggressivness" class="block text-lg font-medium">Aggressiveness</label>
+                        <input type="number" name="aggressivness" id="aggressivness" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('aggressivness', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="sensitivity" class="block text-lg font-medium">Sensitivity</label>
+                        <input type="number" name="sensitivity" id="sensitivity" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('sensitivity', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="max_throttle" class="block text-lg font-medium">Max Throttle</label>
+                        <input type="number" name="max_throttle" id="max_throttle" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('max_throttle', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="interval_size" class="block text-lg font-medium">Interval Size</label>
+                        <input type="number" name="interval_size" id="interval_size" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('interval_size', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="window" class="block text-lg font-medium">Window</label>
+                        <input type="number" name="window" id="window" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('window', '') }}">
+                    </div>
+
+                    <div class="mt-4">
+                        <!-- Save Changes Button -->
+                        <button type="submit" name="save_config" class="w-full bg-blue-500 text-white p-3 rounded">Save Changes</button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Blocklist Management -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-semibold">Blocklist</h2>
+
+                    <!-- Blocklist -->
+                    <ul class="list-disc pl-6">
+                        {% if config.get('blocklist') %}
+                            {% for url in config['blocklist'] %}
+                                <li class="flex justify-between items-center mb-2">
+                                    <span>{{ url }}</span>
+                                    <form method="POST" class="inline">
+                                        <input type="hidden" name="url_to_remove" value="{{ url }}">
+                                        <button type="submit" name="remove_blocklist" class="text-red-500 hover:text-red-700">Remove</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li>No URLs in blocklist</li>
+                        {% endif %}
+                    </ul>
+
+                    <!-- Add URL -->
+                    <form method="POST">
+                        <div class="flex space-x-2">
+                            <input type="text" name="new_url" class="w-full p-2 border border-gray-300 rounded" placeholder="Enter URL to block">
+                            <button type="submit" name="add_blocklist" class="bg-green-500 text-white p-2 rounded">Add URL</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
