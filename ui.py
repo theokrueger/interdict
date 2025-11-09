@@ -1,6 +1,8 @@
 import os
 import yaml
 import subprocess
+import sys
+import signal
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
@@ -62,8 +64,8 @@ def index():
                     # Ensure you have the correct path to the script
                     script_process = subprocess.Popen(
                         ['python3', 'proxy.py'],  # Replace 'your_script.py' with your actual script
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
+                        stdout=sys.stdout,
+                        stderr=sys.stderr,
                         text=True
                     )
 
@@ -85,6 +87,13 @@ def index():
         return redirect(url_for("index"))
 
     return render_template("index.html", config=config, script_process=script_process)
+
+def sigint_handler(signum, frame):
+    if script_process: script_process.terminate()
+    print("SIGINT captured, exiting gracefully.")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, sigint_handler)
 
 if __name__ == "__main__":
     app.run(debug=True)
