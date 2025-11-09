@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YAML Configuration Editor</title>
+    <title>Interdict Command Centre</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-8">
-        <h1 class="text-3xl font-semibold text-center mb-6">YAML Configuration Editor</h1>
+        <h1 class="text-3xl font-semibold text-center mb-6">Interdict Command Centre</h1>
 
         <!-- Form to update configuration -->
         <form method="POST">
             <div class="grid grid-cols-2 gap-8">
                 <!-- Left Column: Configuration Fields -->
                 <div class="space-y-4">
+                    <!-- Configuration fields as before -->
                     <div>
                         <label for="grace_period" class="block text-lg font-medium">Grace Period</label>
                         <input type="number" name="grace_period" id="grace_period" class="w-full p-2 border border-gray-300 rounded" value="{{ config.get('grace_period', '') }}">
@@ -51,7 +52,6 @@
                     </div>
 
                     <div class="mt-4">
-                        <!-- Save Changes Button -->
                         <button type="submit" name="save_config" class="w-full bg-blue-500 text-white p-3 rounded">Save Changes</button>
                     </div>
                 </div>
@@ -86,8 +86,19 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Run and Stop Script Buttons -->
+            <div class="mt-6">
+		    <form method="POST">
+                {% if script_process %}
+                    <p class="text-green-500">Script is running.</p>
+                    <button type="submit" name="stop_script" class="bg-red-500 text-white p-3 rounded w-full">Stop Script</button>
+                {% else %}
+                    <button type="submit" name="run_script" class="bg-green-500 text-white p-3 rounded w-full">Run Script</button>
+                {% endif %}
+                </form>
+            </div>
         </form>
     </div>
 </body>
 </html>
-
