@@ -55,6 +55,8 @@ Where
 *x* is the amount of time (in minutes) an application has been used over the past window of time.
 *u* is a horizontal shift to the throttle curve (Hardcoded Constant)
 
+Additionally, although easiest to set up as a local proxy server, Interdict can be run as a service on an external server! This allows you to connect to Interdict on sandboxed platforms with limited ability to run your own code such as IOS devices — very relevant for cases when you doomscroll on your bed or couch far away from your computer. You simply need some method of connecting to a SOCKS5 proxy server, which can be provided by software such as Potatso in the case of IOS.
+
 ## Additional Credits
 - Alex Kotsinyan for the logo design
 - CodeWithImm for SOCKS5 Proxy resources and sample code
