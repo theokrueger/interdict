@@ -18,19 +18,19 @@ Run:
 ./proxy.py # headlessly run proxy post-config
 ```
 
-## Why?
+![why](./static/why.png)
 Would you be **ashamed** to show your screentime statistics to your family? Have you tried everything under the sun short of throwing your phone in a river to reduce that number? *We sure have*. The issue with conventional time-management approaches is that accountability isn't as cheap as you think it is. Why bother with a time-lock if you can just keep desperately pressing **"5 more minutes"** as you zombily stumble across the lawn of apartment fire vlogs on **Instagram Reels**?
 
 What if a tool just made you actually ***want*** to stop the scroll instead? What if you didn't even know the tool is making you want to stop?
 
-## What?
+![what](./static/what.png)
 One glaring flaw in conventional screen time limiters is *consent*. The user *consents* to install or use this application that clearly tells you when it is in use by entirely blocking the opening of an app or website. The user can revoke this *consent* at any time, rendering the entire operation **pointless**. If a user does not know *when* they are being limited, they will not remove the feature.
 
 Thus, the crucial hypothesis of Interdict is that **frustration** and **friction** are the antithesis of addictive apps, while silently and subtly **throttling** your connection will not alert the user to the actions being taken by Interdict. Causing this frustration won't tell you to **stop scrolling**, it will make you *want* to.
 
 A single silent change to your proxy settings is *all it takes* to use Interdict on **any device**!
 
-## How?
+![how](./static/how.png)
 Interdict leverages the psychological technique of **adversive conditioning** to associate unwanted behaviour (doomscrolling, binging) with negative emotions (frustration) by **algorithmically throttling** your connection to problematic websites and unwanted services. Over time, you, the user, will slowly begin associating your bottomless feed with laggy video, high ping, or dropped packets that get ramped up the longer you use the service. 
 
 In short:
