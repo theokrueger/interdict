@@ -42,11 +42,11 @@ with open('config.yaml', 'r') as f:
 
 grace_period = data['grace_period'] # in units of 15 seconds
 aggressiveness = data['aggressivness'] # integer value 1-10
-max_throttle = data['max_throttle']
-window = data['window'] # in units of 15 seconds
+max_throttle = data['max_throttle'] # max throttle seconds
 sensitivity = data['sensitivity'] # threshold of activity during a given window before it is considered usage
-random_delay = data['random_delay']
-interval_size = data['interval_size']
+random_delay = data['random_delay'] # "randomness" of delay from (1-d) to 1
+interval_size = data['interval_size'] # size of intervals in seconds
+window = data['window'] * interval_size # window var is minutes, and this will adjust for interval size
 blocklist = dict()
 for link in data['blocklist']:
     blocklist[link.encode()] = [0, deque([0] * window), 0] # number of time units > sensitivity, packet count per time unit, packet total in current time unit
@@ -63,6 +63,7 @@ def error(msg="", err=None):
 
 
 def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in either client or destination sockets, forward directly
+    global time_bound
     global exit
     while not exit:
         try:
@@ -73,6 +74,16 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
         if not reader:
             continue
         #-------- our code
+        if time.time() - time_bound > interval_size:
+            time_bound += interval_size
+            lock.acquire()
+            for b in blocklist:
+                window_remove = blocklist[b][1].popleft()
+                blocklist[b][1].append(blocklist[b][2])
+                blocklist[b][2] = 0
+                blocklist[b][0] += 1 if blocklist[b][1][len(blocklist[b][1]) - grace_period - 1] > sensitivity else 0
+                blocklist[b][0] -= 1 if window_remove > sensitivity else 0
+            lock.release()
         try:
             for sock in reader:
                 data = sock.recv(BUFSIZE)
@@ -92,11 +103,14 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
                     offset = 2/aggressiveness
                     height_adjust = max_throttle / (1 + math.exp(aggressiveness * offset))
                     max_delay = (max_throttle / (max_throttle - height_adjust)) * ((max_throttle / (1 + math.exp(-aggressiveness * (b[0]*interval_size/60 - offset)))) - height_adjust)
+                    print(f"Blocking Message to/from {dst_addr} with time {max_delay}")
                     time.sleep((random.random()*random_delay+(1-random_delay)) * max_delay)
 
-                    print(f"Blocking Message to/from {dst_addr}")
-
+                    # if random.random() < max_delay:
+                    #     print("\n\n\n\nfull second delay \n\n\n\n\n")
+                    #     time.sleep(1)
                 # ------------ our code
+                
                 if sock is socket_dst:
                     socket_src.sendall(data)
                 else:
@@ -320,12 +334,13 @@ def main():
             sys.exit(0)
         recv_thread = Thread(target=connection, args=(wrapper, ))
         recv_thread.start()
+        print(f"\n\n\n\n\n\n\n\n\n\n\nchecking time {time.time()} - {time_bound} =========================\n\n\n\n\n\n\n\n\n\n\n")
         if time.time() - time_bound > interval_size:
             time_bound += interval_size
             lock.acquire()
             for b in blocklist:
                 window_remove = blocklist[b][1].popleft()
-                blocklist[b][1].append(b[2])
+                blocklist[b][1].append(blocklist[b][2])
                 blocklist[b][2] = 0
                 blocklist[b][0] += 1 if blocklist[b][1][len(blocklist[b][1]) - grace_period - 1] > sensitivity else 0
                 blocklist[b][0] -= 1 if window_remove > sensitivity else 0
