@@ -6,11 +6,6 @@ import struct
 import random
 
 class InstagramThrottlingProxy:
-    def __init__(self, host='0.0.0.0', port=1080, username='admin', password='admin'):
-        self.host = host
-        self.port = port
-        self.username = username
-        self.password = password
 
     def handle_client(self, client_socket):
         try:
@@ -27,17 +22,18 @@ class InstagramThrottlingProxy:
                 methods.append(ord(client_socket.recv(1)))
 
             # Require username/password auth (method 2)
-            if 2 not in methods:
-                 client_socket.send(b'\x05\xff')  # No acceptable methods
-                 client_socket.close()
-                 return
+            # if 2 not in methods:
+            #      client_socket.send(b'\x05\xff')  # No acceptable methods
+            #      client_socket.close()
+            #      return
 
-            client_socket.send(b'\x05\x02')  # Choose username/password auth
+          #  client_socket.send(b'\x05\x02')  # Choose username/password auth
+            client_socket.send(b'\x05\x00')
 
             # Handle authentication
-            if not self.authenticate(client_socket):
-                 client_socket.close()
-                 return
+         #   if not self.authenticate(client_socket):
+         #        client_socket.close()
+         #        return
 
             # Get connection request
             version, cmd, _, addr_type = struct.unpack("!BBBB", client_socket.recv(4))
@@ -261,7 +257,7 @@ class InstagramThrottlingProxy:
 if __name__ == '__main__':
     # Configuration
     PROXY_HOST = '0.0.0.0'  # Listen on all interfaces
-    PROXY_PORT = 80       # SOCKS5 default port
+    PROXY_PORT = 9067       # SOCKS5 default port
     USERNAME = 'myuser'     # Change this!
     PASSWORD = 'mypass123'  # Change this!
 

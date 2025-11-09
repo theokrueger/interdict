@@ -1,5 +1,10 @@
-delayTime: 1
-aggressivness: 1
+grace_period: 0
+random_delay: 0.1
+aggressivness: 10
+sensitivity: 10
+window: 20
 blocklist:
-  - www.google.com
-  - www.instagram.com
+  - www.reddit.com
+  - instagram.com
+  - preview.redd.it
+  - v.redd.it

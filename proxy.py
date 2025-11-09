@@ -15,6 +15,8 @@ import sys
 import time
 import random
 from queue import Queue
+from collections import deque
+import math
 
 BUFSIZE = 2048
 TIMEOUT_SOCKET = 5
@@ -35,14 +37,23 @@ ATYP_IPV4 = b'\x01'
 ATYP_DOMAINNAME = b'\x03'
 
 # interdiction config
+with open('config.yaml', 'r') as f:
+    data = yaml.load(f, Loader=yaml.SafeLoader)
+
+grace_period = data['grace_period'] # in units of 15 seconds
+aggressiveness = data['aggressivness'] # integer value 1-10
+window = data['window'] # in units of 15 seconds
+sensitivity = data['sensitivity'] # threshold of activity during a given window before it is considered usage
+random_delay = data['random_delay']
 blocklist = dict()
-blocklist[b"www.reddit.com"] = 1
-blocklist[b"preview.redd.it"] = 1
-blocklist[b"www.instagram.com"] = 1
-blocklist[b"gateway.instagram.com"] = 1
+for link in data['blocklist']:
+    blocklist[link.encode()] = [0, deque([0] * window), 0] # number of time units > sensitivity, packet count per time unit, packet total in current time unit
+
+starttime = time.time()
+time_bound = starttime
+lock = Lock()
 
 exit = False
-
 
 def error(msg="", err=None):
     print(msg)
@@ -50,6 +61,7 @@ def error(msg="", err=None):
 
 
 def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in either client or destination sockets, forward directly
+    global exit
     while not exit:
         try:
             reader, _, _ = select.select([socket_src, socket_dst], [], [], 1)
@@ -58,27 +70,39 @@ def proxy_loop(socket_src, socket_dst, dst_addr): # listen for new data in eithe
             return
         if not reader:
             continue
+        #-------- our code
         try:
             for sock in reader:
                 data = sock.recv(BUFSIZE)
                 if not data: # TCP connection has been closed
                     return
                 print(f"Processing Message to/from {dst_addr}")
+                matches = [element for element in blocklist if element in dst_addr]
+                if matches:
+                    b = blocklist[matches[0]]
+                    lock.acquire()
+                    b[2] += 1
+                    print(blocklist)
+                    lock.release()
+                    # if the number of packets processed during the current window, NOT counting the last [DELAY] minutes, is > sensitivity, throttle.
+                    #d = (max_throttle / (1+math.exp(-aggressiveness*(x-START_POINT)))) - (max_throttle/(1+math.exp(aggressiveness * START_POINT)))
+                    d = min(aggressiveness * math.exp(b[0]/2) * b[0] / 100, 2)
+                    time.sleep((random.random()*random_delay+(1-random_delay)) * d)
 
-                if any([substring in element for element in l]):
-                    blocklist[dst_addr][1]
-                    time.sleep(random.random() / 5)
                     print(f"Blocking Message to/from {dst_addr}")
+
+                # ------------ our code
                 if sock is socket_dst:
-                    socket_src.send(data)
+                    socket_src.sendall(data)
                 else:
-                    socket_dst.send(data)
+                    socket_dst.sendall(data)
         except socket.error as err:
             error("Loop failed", err)
             return
 
 
 def connect_to_dst(dst_addr, dst_port):
+    global exit
     sock = create_socket()
     if OUTGOING_INTERFACE:
         try:
@@ -262,13 +286,17 @@ def bind_port(sock):
 
 
 def exit_handler(signum, frame):
+    global exit
     """ Signal handler called with signal, exit script """
     print('Signal handler called with signal', signum)
-    exit = true
+    exit = True
 
 
 def main():
     """ Main function """
+    global exit
+    global time_bound
+    global blocklist
     new_socket = create_socket()
     bind_port(new_socket)
     signal(SIGINT, exit_handler)
@@ -287,8 +315,17 @@ def main():
             sys.exit(0)
         recv_thread = Thread(target=connection, args=(wrapper, ))
         recv_thread.start()
+        if time.time() - time_bound > 15:
+            time_bound += 15
+            lock.acquire()
+            for b in blocklist:
+                window_remove = blocklist[b][1].popleft()
+                blocklist[b][1].append(b[2])
+                blocklist[b][2] = 0
+                blocklist[b][0] += 1 if blocklist[b][1][len(blocklist[b][1]) - grace_period - 1] > sensitivity else 0
+                blocklist[b][0] -= 1 if window_remove > sensitivity else 0
+            lock.release()
     new_socket.close()
-
 
 if __name__ == '__main__':
     main()
