@@ -48,6 +48,7 @@ The nature of the throttling is **highly configurable**, allowing the user to mo
 
 Each packet stream is throttled by some amount of time determined by the following formula:
 ![how](./static/da_al-gore-ithm.png)
+
 Where 
 *m* is the maximum throttle delay
 *a* is the aggressiveness factor
