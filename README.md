@@ -64,3 +64,5 @@ Where
 ![horse 1](./static/slideshow1.png)
 ![horse 2](./static/slideshow2.png)
 ![horse 3](./static/slideshow3.png)
+
+![bonus horse](./static/logo.png)
